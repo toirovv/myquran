@@ -1,172 +1,218 @@
-import React, { useState } from "react";
-import { Check, Search, BookOpen, Layers, CheckCircle2 } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { Check, Search, Trash2, ChevronDown } from "lucide-react";
+import surahData from "../data/surahData";
 
-// Suralar ro'yxati (boshlang'ich ma'lumotlar)
-const initialSurahs = [
-  { id: 1, name: "Al-Fatiha", arabic: "الفاتحة", verses: 7, type: "Makkah" },
-  { id: 2, name: "Al-Baqarah", arabic: "البقرة", verses: 286, type: "Madinah" },
-  { id: 3, name: "Al-Imran", arabic: "آل عمران", verses: 200, type: "Madinah" },
-  { id: 4, name: "An-Nisa", arabic: "النساء", verses: 176, type: "Madinah" },
-  {
-    id: 5,
-    name: "Al-Ma'idah",
-    arabic: "المائدة",
-    verses: 120,
-    type: "Madinah",
-  },
-  { id: 6, name: "Al-An'am", arabic: "الأنعام", verses: 165, type: "Makkah" },
-  { id: 7, name: "Al-A'raf", arabic: "الأعراف", verses: 206, type: "Makkah" },
-  { id: 8, name: "Al-Anfal", arabic: "الأنفال", verses: 75, type: "Madinah" },
-  { id: 9, name: "At-Tawbah", arabic: "التوبة", verses: 129, type: "Madinah" },
-  { id: 10, name: "Yunus", arabic: "يونس", verses: 109, type: "Makkah" },
-  { id: 11, name: "Hud", arabic: "هود", verses: 123, type: "Makkah" },
-  { id: 12, name: "Yusuf", arabic: "يوسف", verses: 111, type: "Makkah" },
-];
+const prayerSelections = {
+  Fajr: [78, 79, 80, 81, 82],
+  Dhuhr: [87, 88, 89],
+  Asr: [103, 102],
+  Maghrib: [109, 112, 113, 114],
+  Isha: [91, 94, 95],
+};
 
 export default function Home() {
   const [selectedSurahs, setSelectedSurahs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activePrayer, setActivePrayer] = useState(null);
+  const dropdownRef = useRef(null);
 
-  // Surani tanlash yoki o'chirish (Tick / Untick) funksiyasi
   const toggleSurah = (id) => {
+    // Agar qo'lda tanlansa, namoz rejimini o'chiramiz,
+    // shunda boshqa cardlar g'oyib bo'lmaydi
+    setActivePrayer(null);
+
     if (selectedSurahs.includes(id)) {
-      setSelectedSurahs(selectedSurahs.filter((surahId) => surahId !== id));
+      setSelectedSurahs(selectedSurahs.filter((sId) => sId !== id));
     } else {
       setSelectedSurahs([...selectedSurahs, id]);
     }
   };
 
-  // Qidiruv bo'yicha filterlash
-  const filteredSurahs = initialSurahs.filter((surah) =>
-    surah.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const handlePrayerSelect = (prayer) => {
+    setSelectedSurahs(prayerSelections[prayer]);
+    setActivePrayer(prayer);
+    setIsDropdownOpen(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedSurahs([]);
+    setActivePrayer(null);
+    setSearchQuery("");
+  };
+
+  useEffect(() => {
+    if (!isDropdownOpen) return undefined;
+
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  // Mantiq: Agar namoz tanlangan bo'lsa, faqat o'sha suralar.
+  // Agar manual bo'lsa yoki qidiruv bo'lsa, hamma filtrga tushganlari.
+  const filteredSurahs = activePrayer
+    ? surahData.filter((s) => selectedSurahs.includes(s.id))
+    : surahData.filter((s) =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+
+  const displaySurahs = filteredSurahs;
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-900 dark:text-slate-100 font-sans antialiased relative overflow-hidden pb-20">
-      {/* --- BACKGROUND GLOW EFFECTS --- */}
-      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-emerald-500/10 blur-[130px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[-10%] w-[500px] h-[500px] rounded-full bg-teal-500/5 blur-[150px] pointer-events-none" />
+    <div className="min-h-screen bg-transparent text-slate-100 font-sans p-6 md:p-12 relative">
+      <main className="max-w-7xl mx-auto relative z-10">
+        {/* --- TOP CONTROLS --- */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            {/* Dropdown */}
+            <div ref={dropdownRef} className="relative w-full md:w-60">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full h-14 px-6 bg-slate-800/80 border border-slate-700/80 rounded-2xl flex items-center justify-between hover:bg-slate-700/90 transition-all font-bold text-base backdrop-blur-md cursor-pointer text-slate-100"
+              >
+                <span className="truncate">
+                  {activePrayer || "Namoz tanlang"}
+                </span>
+                <ChevronDown
+                  className={`w-5 h-5 text-emerald-400 transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-      {/* --- HERO BANNER --- */}
-      <main className="max-w-7xl mx-auto px-6 pt-16 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/5 border border-emerald-500/10 text-emerald-400 text-xs font-semibold tracking-wide uppercase mb-6 backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Al-Qur'an Karim
+              {/* Animated Dropdown Menu */}
+              <div
+                className={`absolute top-[110%] left-0 w-full bg-slate-950/95 border border-slate-800/80 rounded-2xl shadow-2xl z-50 overflow-hidden transition-all duration-300 origin-top ${isDropdownOpen ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0 pointer-events-none"}`}
+              >
+                {Object.keys(prayerSelections).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => handlePrayerSelect(p)}
+                    className="w-full px-6 py-4 text-left text-sm font-semibold text-slate-100 hover:bg-emerald-500/10 transition-colors border-b border-slate-800/70 last:border-none cursor-pointer"
+                  >
+                    {p} vaqti suralari
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Clear Button */}
+            {(selectedSurahs.length > 0 || activePrayer) && (
+              <button
+                onClick={clearSelection}
+                className="h-14 px-6 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all flex items-center gap-2 font-bold whitespace-nowrap"
+              >
+                <Trash2 className="w-5 h-5" /> Tozalash
+              </button>
+            )}
           </div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white mb-4">
-            Quran Surah{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-              Picker Panel
-            </span>
-          </h1>
-          <p className="text-slate-700 dark:text-slate-400 text-base md:text-lg leading-relaxed">
-            Kerakli suralarni belgilang (tick), ularni kuzatib boring va o'z
-            ro'yxatingizni shakllantiring.
-          </p>
-        </div>
 
-        {/* --- STATISTIKA VA QIDIRUV PANELI --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {/* Qidiruv input */}
-          <div className="md:col-span-2 relative flex items-center">
-            <Search className="absolute left-4 w-5 h-5 text-slate-400 dark:text-slate-500" />
+          {/* Search */}
+          <div className="relative w-full md:max-w-md group">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
             <input
               type="text"
-              placeholder="Surani nomi bo'yicha qidiring..."
+              placeholder="Sura qidirish..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-14 pl-12 pr-4 rounded-2xl bg-slate-50/95 dark:bg-slate-900/40 border border-slate-200/70 dark:border-slate-800/80 text-slate-900 dark:text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 backdrop-blur-xl transition-all"
+              className="w-full h-14 pl-14 pr-6 rounded-2xl bg-white/5 border border-white/10 text-lg focus:outline-none focus:border-emerald-500/40 transition-all placeholder:text-slate-600"
             />
-          </div>
-
-          {/* Info Card (Tanlanganlar soni) */}
-          <div className="h-14 px-5 rounded-2xl bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 backdrop-blur-xl flex items-center justify-between shadow-lg">
-            <div className="flex items-center gap-2.5 text-slate-400 text-sm font-medium">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              Tanlangan suralar:
-            </div>
-            <span className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm min-w-8 text-center">
-              {selectedSurahs.length}
-            </span>
           </div>
         </div>
 
-        {/* --- SURALAR RO'YXATI (GRID LAYOUT) --- */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredSurahs.map((surah) => {
+        <div className="mb-8 rounded-3xl bg-white/5 dark:bg-slate-900/50 border border-white/10 p-5 text-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-emerald-400 font-semibold">
+                Tanlangan suralar
+              </p>
+              <p className="mt-2 text-2xl font-bold text-white">
+                {selectedSurahs.length} ta
+              </p>
+            </div>
+            <div className="text-sm text-slate-400">
+              {selectedSurahs.length > 0
+                ? "Tanlangan suralaringizni pastdagi kartalarda ko'rishingiz mumkin."
+                : "Hozircha biror sura tanlanmadi."}
+            </div>
+          </div>
+        </div>
+
+        {/* --- SURAH GRID (Yaxshilangan masofa gap-4/gap-6) --- */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {displaySurahs.map((surah) => {
             const isChecked = selectedSurahs.includes(surah.id);
             return (
               <div
                 key={surah.id}
                 onClick={() => toggleSurah(surah.id)}
-                className={`relative group p-5 rounded-2xl border transition-all duration-300 cursor-pointer select-none ${
+                className={`relative p-5 md:p-7 rounded-[32px] border transition-all duration-500 cursor-pointer group ${
                   isChecked
-                    ? "bg-gradient-to-br from-emerald-200/70 to-slate-50 border-emerald-400/40 shadow-[0_4px_25px_rgba(16,185,129,0.12)] dark:from-emerald-950/30 dark:to-slate-900/80"
-                    : "bg-slate-50/95 dark:bg-slate-900/30 border-slate-200/70 dark:border-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-900/50 shadow-md"
+                    ? "bg-emerald-500/10 border-emerald-500 shadow-[0_10px_40px_rgba(16,185,129,0.1)] scale-[1.02]"
+                    : "bg-white/[0.03] border-white/5 hover:border-white/20 hover:bg-white/[0.05]"
                 }`}
               >
-                {/* Tepada joylashgan Tick / Checkbox qismi */}
-                <div className="absolute top-4 right-4 flex items-center justify-center">
+                {/* Check Icon */}
+                <div className="absolute top-6 right-6">
                   <div
-                    className={`w-5.5 h-5.5 rounded-md border flex items-center justify-center transition-all duration-200 ${
+                    className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
                       isChecked
-                        ? "bg-emerald-500 border-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(52,211,153,0.4)]"
-                        : "border-slate-700 group-hover:border-slate-500 bg-slate-950/40"
+                        ? "bg-emerald-500 border-emerald-400 scale-110"
+                        : "border-white/10 bg-black/20"
                     }`}
                   >
-                    {isChecked && <Check className="w-4 h-4 stroke-[3]" />}
+                    {isChecked && (
+                      <Check className="w-4 h-4 text-black stroke-[4]" />
+                    )}
                   </div>
                 </div>
 
-                {/* Sura tartib raqami va ma'lumotlari */}
-                <div className="flex items-start gap-3.5">
-                  <div
-                    className={`w-10 h-10 rounded-xl font-bold text-sm flex items-center justify-center border transition-colors duration-300 ${
+                <div className="flex flex-col gap-5">
+                  <span
+                    className={`w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm border ${
                       isChecked
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                        : "bg-slate-950/40 border-slate-800 text-slate-400"
+                        ? "bg-emerald-500 text-black border-emerald-400"
+                        : "bg-white/5 text-slate-500 border-white/10"
                     }`}
                   >
                     {surah.id}
-                  </div>
+                  </span>
 
-                  <div className="flex flex-col pr-8">
-                    <h3 className="font-bold text-base text-slate-900 dark:text-slate-200 tracking-tight group-hover:text-slate-700 dark:group-hover:text-white transition-colors">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-bold text-white group-hover:text-emerald-400 transition-colors mb-1 truncate">
                       {surah.name}
                     </h3>
-                    <span className="text-[11px] text-slate-500 font-medium tracking-wide mt-0.5">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.15em]">
                       {surah.verses} Oyat • {surah.type}
+                    </p>
+                  </div>
+
+                  <div className="pt-5 border-t border-white/5 flex justify-between items-center">
+                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                      Surah
+                    </span>
+                    <span
+                      className={`text-2xl font-serif transition-colors ${isChecked ? "text-emerald-400" : "text-slate-400"}`}
+                    >
+                      {surah.arabic}
                     </span>
                   </div>
-                </div>
-
-                {/* Arabcha nomi (Pastki o'ng burchakda chiroyli fontda) */}
-                <div className="mt-5 flex items-center justify-between border-t border-slate-200/70 dark:border-slate-800/40 pt-3">
-                  <span className="text-xs text-slate-500 tracking-wider">
-                    SURAH
-                  </span>
-                  <span
-                    className={`font-mono text-lg font-bold tracking-wide transition-colors ${
-                      isChecked
-                        ? "text-emerald-500"
-                        : "text-slate-500 dark:text-slate-400"
-                    }`}
-                  >
-                    {surah.arabic}
-                  </span>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Agar qidiruv natijasi bo'sh bo'lsa */}
-        {filteredSurahs.length === 0 && (
-          <div className="text-center py-20 bg-slate-900/10 border border-dashed border-slate-800/80 rounded-3xl backdrop-blur-sm max-w-md mx-auto mt-10">
-            <p className="text-slate-500 text-sm">
-              Bunday nomli sura topilmadi.
-            </p>
+        {/* Empty State */}
+        {displaySurahs.length === 0 && (
+          <div className="text-center py-32 rounded-[40px] border-2 border-dashed border-white/5">
+            <p className="text-slate-500 text-xl">Sura topilmadi.</p>
           </div>
         )}
       </main>

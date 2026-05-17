@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home as HomeIcon, Search, Settings, Moon, Sun } from "lucide-react";
 
-export default function Header({ theme, toggleTheme }) {
+export default function Header({ theme, toggleTheme, onNavigate }) {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
 
@@ -11,6 +11,7 @@ export default function Header({ theme, toggleTheme }) {
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <Link
           to="/"
+          onClick={onNavigate}
           className="flex items-center gap-3 group transition-transform duration-200 active:scale-95"
         >
           <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-[0_0_20px_rgba(52,211,153,0.25)] transition-transform duration-300 group-hover:scale-105">
@@ -29,6 +30,7 @@ export default function Header({ theme, toggleTheme }) {
         <nav className="hidden md:flex items-center gap-1.5 bg-slate-50/90 dark:bg-slate-900/50 p-1.5 rounded-full border border-slate-200/70 dark:border-slate-800/60 backdrop-blur-sm">
           <Link
             to="/"
+            onClick={onNavigate}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               isActive("/")
                 ? "text-emerald-500 bg-emerald-500/10 shadow-[inset_0_1px_1px_rgba(52,211,153,0.1)]"
@@ -39,6 +41,7 @@ export default function Header({ theme, toggleTheme }) {
           </Link>
           <Link
             to="/random-pairs"
+            onClick={onNavigate}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               isActive("/random-pairs")
                 ? "text-emerald-500 bg-emerald-500/10"
@@ -49,6 +52,7 @@ export default function Header({ theme, toggleTheme }) {
           </Link>
           <Link
             to="/reading-history"
+            onClick={onNavigate}
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               isActive("/reading-history")
                 ? "text-emerald-500 bg-emerald-500/10"
