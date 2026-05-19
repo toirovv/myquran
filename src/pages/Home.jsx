@@ -73,7 +73,7 @@ export default function Home() {
       );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-4 sm:p-6 md:p-12 relative">
+    <div className=" text-slate-100 font-sans p-4 sm:p-6 md:p-12 relative">
       <main className="max-w-7xl mx-auto relative z-10 space-y-6 md:space-y-10">
         {/* --- TOP CONTROLS (Responsive Wrapper) --- */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-white/5 pb-6 md:pb-8">
