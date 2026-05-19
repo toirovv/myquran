@@ -64,14 +64,6 @@ export default function Header({ theme, toggleTheme, onNavigate }) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <button className="p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-900/70 border border-slate-300/70 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all">
-            <Search className="w-5 h-5" />
-          </button>
-
-          <button className="p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-900/70 border border-slate-300/70 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all">
-            <Settings className="w-5 h-5 stroke-[2.5]" />
-          </button>
-
           <button
             onClick={toggleTheme}
             className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"

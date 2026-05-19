@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import RandomPairs from "./pages/RandomPairs";
 import ReadingHistory from "./pages/ReadingHistory";
 import NotFound from "./pages/NotFound";
+import { SelectedSurahProvider } from "./context/SelectedSurahContext";
 
 // 1. Yangi va noodatiy "Glow/Neon" dizayndagi Spinner komponenti
 const ModernSpinner = () => {
@@ -73,18 +74,20 @@ export default function App() {
   };
 
   return (
-    <BrowserRouter>
-      {/* NavigationWatcher barcha Route'larni o'rab turadi */}
-      <NavigationWatcher>
-        <Routes>
-          <Route element={<Layout theme={theme} toggleTheme={toggleTheme} />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/random-pairs" element={<RandomPairs />} />
-            <Route path="/reading-history" element={<ReadingHistory />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </NavigationWatcher>
-    </BrowserRouter>
+    <SelectedSurahProvider>
+      <BrowserRouter>
+        {/* NavigationWatcher barcha Route'larni o'rab turadi */}
+        <NavigationWatcher>
+          <Routes>
+            <Route element={<Layout theme={theme} toggleTheme={toggleTheme} />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/random-pairs" element={<RandomPairs />} />
+              <Route path="/reading-history" element={<ReadingHistory />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </NavigationWatcher>
+      </BrowserRouter>
+    </SelectedSurahProvider>
   );
 }
